@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sistema de Validación QR</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="login-container">
+        <h1>🔐 Sistema de Validación Documental</h1>
+        <h2>Inicio de Sesión</h2>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Correo electrónico:</label>
+                <input type="email" id="email" required placeholder="admin@sistema.qr">
+            </div>
+            <div class="form-group">
+                <label for="password">Contraseña:</label>
+                <input type="password" id="password" required placeholder="password123">
+            </div>
+            <button type="submit">Ingresar</button>
+        </form>
+        <p class="hint">Usuario demo: admin@sistema.qr / password123</p>
+    </div>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('http://localhost:3000/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    window.location.href = 'panel.html';
+                } else {
+                    alert(data.error || 'Error de autenticación');
+                }
+            } catch (error) {
+                alert('Error de conexión con el servidor');
+            }
+        });
+    </script>
+</body>
+</html>

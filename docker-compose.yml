@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: qr_db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: validacion_qr
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/models/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - qr_network
+
+  backend:
+    build: ./backend
+    container_name: qr_backend
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: admin
+      DB_PASSWORD: admin123
+      DB_NAME: validacion_qr
+      JWT_SECRET: clave_secreta_qr_2024
+      PORT: 3000
+    volumes:
+      - ./backend/uploads:/app/uploads
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    networks:
+      - qr_network
+
+  frontend:
+    image: nginx:alpine
+    container_name: qr_frontend
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - qr_network
+
+volumes:
+  postgres_data:
+
+networks:
+  qr_network:
+    driver: bridge
