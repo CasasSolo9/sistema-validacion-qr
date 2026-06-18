@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../config/database');
 
-// Validar documento por folio (público, no requiere auth)
 router.get('/:folio', async (req, res) => {
     try {
         const { folio } = req.params;
@@ -17,13 +16,11 @@ router.get('/:folio', async (req, res) => {
         `, [folio]);
 
         if (result.rows.length === 0) {
-            // Registrar intento fallido
             await pool.query(
                 `INSERT INTO bitacora_validaciones (documento_id, ip_address, resultado)
                  VALUES (NULL, $1, 'no_encontrado')`,
                 [ipAddress]
             );
-
             return res.json({
                 valido: false,
                 mensaje: 'Documento no encontrado en el sistema',
@@ -33,7 +30,6 @@ router.get('/:folio', async (req, res) => {
 
         const documento = result.rows[0];
 
-        // Registrar consulta exitosa
         await pool.query(
             `INSERT INTO bitacora_validaciones (documento_id, ip_address, resultado)
              VALUES ((SELECT id FROM documentos WHERE folio = $1), $2, $3)`,
@@ -43,7 +39,7 @@ router.get('/:folio', async (req, res) => {
         res.json({
             valido: documento.estado === 'vigente',
             mensaje: documento.estado === 'vigente' 
-                ? 'Documento válido y vigente' 
+                ? 'Documento valido y vigente' 
                 : `Documento ${documento.estado}`,
             documento: {
                 folio: documento.folio,
@@ -54,7 +50,6 @@ router.get('/:folio', async (req, res) => {
                 fecha_emision: documento.created_at
             }
         });
-
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Error al validar documento' });

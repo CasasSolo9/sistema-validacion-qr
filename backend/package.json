@@ -1,7 +1,7 @@
 {
   "name": "sistema-validacion-qr",
   "version": "1.0.0",
-  "description": "Sistema de Validación Documental con Código QR",
+  "description": "Sistema de Validacion Documental con Codigo QR",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

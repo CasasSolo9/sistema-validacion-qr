@@ -1,5 +1,3 @@
--- Crear tablas para el Sistema de Validación Documental con QR
-
 -- Tabla de usuarios
 CREATE TABLE IF NOT EXISTS usuarios (
     id SERIAL PRIMARY KEY,
@@ -17,10 +15,9 @@ CREATE TABLE IF NOT EXISTS estados (
     descripcion VARCHAR(100)
 );
 
--- Insertar estados iniciales
 INSERT INTO estados (nombre, descripcion) VALUES 
-    ('vigente', 'Documento activo y válido'),
-    ('revocado', 'Documento revocado, no válido'),
+    ('vigente', 'Documento activo y valido'),
+    ('revocado', 'Documento revocado, no valido'),
     ('cancelado', 'Documento cancelado por el emisor')
 ON CONFLICT (nombre) DO NOTHING;
 
@@ -41,7 +38,7 @@ CREATE TABLE IF NOT EXISTS documentos (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Tabla de bitácora de validaciones
+-- Tabla de bitacora de validaciones
 CREATE TABLE IF NOT EXISTS bitacora_validaciones (
     id SERIAL PRIMARY KEY,
     documento_id INTEGER REFERENCES documentos(id),
@@ -50,7 +47,8 @@ CREATE TABLE IF NOT EXISTS bitacora_validaciones (
     fecha_consulta TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Insertar usuario de prueba (contraseña: password123)
+-- Usuario de prueba: admin@sistema.qr / password123
+-- Hash generado con bcrypt 10 rounds
 INSERT INTO usuarios (nombre, email, password, rol) VALUES 
     ('Administrador', 'admin@sistema.qr', '$2b$10$LW6ce/q2OheNvJ3ms3EPuOPsWtd1fQ9ocusJddhFFyjL3.uyAuPQC', 'admin'),
     ('Capturista', 'capturista@sistema.qr', '$2b$10$LW6ce/q2OheNvJ3ms3EPuOPsWtd1fQ9ocusJddhFFyjL3.uyAuPQC', 'capturista')

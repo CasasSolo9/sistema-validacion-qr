@@ -1,35 +1,40 @@
-# Sistema de Validación Documental con Código QR
+# Sistema de Validacion Documental con Codigo QR
 
-## Descripción
-Sistema web para la carga, gestión y validación pública de documentos PDF mediante códigos QR únicos.
+## Descripcion
+Sistema web para la carga, gestion y validacion publica de documentos PDF mediante codigos QR unicos.
 
-## Tecnologías Utilizadas
-- **Backend:** Node.js + Express (API REST ligera y rápida)
-- **Frontend:** HTML5 + CSS3 + JavaScript vanilla (sin frameworks, ligero)
-- **Base de Datos:** PostgreSQL (robusta, relacional, compatible con Docker)
-- **Generación QR:** librería `qrcode` de npm
-- **Manipulación PDF:** librería `pdf-lib` de npm
+## Tecnologias Utilizadas
+- **Backend:** Node.js + Express
+- **Frontend:** HTML5 + CSS3 + JavaScript vanilla
+- **Base de Datos:** PostgreSQL
+- **Generacion QR:** libreria `qrcode`
+- **Manipulacion PDF:** libreria `pdf-lib`
 - **Contenedores:** Docker + Docker Compose
 
 ## Estructura del Proyecto
 ```
-├── docker-compose.yml      # Orquestación de contenedores
-├── backend/                # API REST (Node.js/Express)
+├── docker-compose.yml
+├── backend/
 │   ├── Dockerfile
+│   ├── package.json
 │   ├── server.js
-│   ├── routes/
-│   ├── controllers/
-│   ├── middleware/
+│   ├── config/database.js
+│   ├── middleware/auth.js
 │   ├── models/init-db.sql
-│   └── uploads/
-└── frontend/               # Interfaz de usuario
+│   └── routes/
+│       ├── auth.js
+│       ├── documentos.js
+│       └── validacion.js
+└── frontend/
+    ├── Dockerfile
+    ├── index.html
     ├── login.html
     ├── panel.html
     ├── validar.html
     └── css/styles.css
 ```
 
-## Instrucciones de Instalación
+## Instrucciones de Instalacion
 
 ### 1. Clonar el repositorio
 ```bash
@@ -45,10 +50,9 @@ docker compose up --build
 ### 3. Acceder al sistema
 - **Frontend:** http://localhost:8080
 - **Backend API:** http://localhost:3000
-- **Base de datos:** localhost:5432
 
 ### 4. Credenciales de prueba
-| Usuario | Email | Contraseña | Rol |
+| Usuario | Email | Contrasena | Rol |
 |---------|-------|------------|-----|
 | Administrador | admin@sistema.qr | password123 | admin |
 | Capturista | capturista@sistema.qr | password123 | capturista |
@@ -56,18 +60,15 @@ docker compose up --build
 ## Funcionalidades
 - Login de usuarios autorizados
 - Carga de documentos PDF
-- Generación de folio único
-- Generación de QR con URL de validación
-- Inserción de QR en el PDF (5 posiciones)
+- Generacion de folio unico
+- Generacion de QR con URL de validacion
+- Insercion de QR en el PDF (5 posiciones)
 - Repositorio de documentos
 - Descarga de PDF con QR
-- Revocación de documentos
-- Validación pública sin login
-- Bitácora de consultas
-
-## Diagramas
-- Ver carpeta `/docs/` para diagramas de caso de uso y entidad-relación.
+- Revocacion de documentos
+- Validacion publica sin login
+- Bitacora de consultas
 
 ## Autores
-- [Nombre del equipo]
-- UNAM Aragón - Ingeniería
+- Equipo de desarrollo
+- UNAM Aragon - Ingenieria

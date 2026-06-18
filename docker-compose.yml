@@ -37,10 +37,8 @@ services:
       - qr_network
 
   frontend:
-    image: nginx:alpine
+    build: ./frontend
     container_name: qr_frontend
-    volumes:
-      - ./frontend:/usr/share/nginx/html:ro
     ports:
       - "8080:80"
     depends_on:

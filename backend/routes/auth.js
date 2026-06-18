@@ -4,15 +4,10 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const pool = require('../config/database');
 
-// Login
 router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
-
-        const result = await pool.query(
-            'SELECT * FROM usuarios WHERE email = $1',
-            [email]
-        );
+        const result = await pool.query('SELECT * FROM usuarios WHERE email = $1', [email]);
 
         if (result.rows.length === 0) {
             return res.status(401).json({ error: 'Usuario no encontrado' });
@@ -22,7 +17,7 @@ router.post('/login', async (req, res) => {
         const validPassword = await bcrypt.compare(password, user.password);
 
         if (!validPassword) {
-            return res.status(401).json({ error: 'Contraseña incorrecta' });
+            return res.status(401).json({ error: 'Contrasena incorrecta' });
         }
 
         const token = jwt.sign(

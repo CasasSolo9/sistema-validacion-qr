@@ -1,93 +1,44 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Validación de Documento - Sistema QR</title>
-    <link rel="stylesheet" href="css/styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Validacion de Documento - Sistema QR</title>
+<link rel="stylesheet" href="css/styles.css">
 </head>
 <body class="validacion-page">
-    <div class="validacion-container">
-        <h1>🔍 Validación de Documento</h1>
-        <div id="resultado">
-            <p class="loading">Verificando documento...</p>
-        </div>
-        <div class="footer">
-            <p>Sistema de Validación Documental con Código QR</p>
-            <a href="login.html">Acceso Administrativo</a>
-        </div>
-    </div>
-
-    <script>
-        const API_URL = 'http://localhost:3000/api';
-
-        async function validarDocumento() {
-            const params = new URLSearchParams(window.location.search);
-            const folio = params.get('folio');
-            const resultadoDiv = document.getElementById('resultado');
-
-            if (!folio) {
-                resultadoDiv.innerHTML = `
-                    <div class="estado-resultado no-encontrado">
-                        <h2>❌ Documento No Encontrado</h2>
-                        <p>No se proporcionó un folio válido para validar.</p>
-                    </div>
-                `;
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_URL}/validar/${folio}`);
-                const data = await response.json();
-
-                let icono, clase, mensajeEstado;
-
-                if (data.estado === 'no_registrado') {
-                    icono = '❌';
-                    clase = 'no-encontrado';
-                    mensajeEstado = 'NO REGISTRADO';
-                } else if (data.documento.estado === 'vigente') {
-                    icono = '✅';
-                    clase = 'vigente';
-                    mensajeEstado = 'VÁLIDO';
-                } else if (data.documento.estado === 'revocado') {
-                    icono = '🚫';
-                    clase = 'revocado';
-                    mensajeEstado = 'REVOCADO';
-                } else {
-                    icono = '⚠️';
-                    clase = 'cancelado';
-                    mensajeEstado = 'CANCELADO';
-                }
-
-                resultadoDiv.innerHTML = `
-                    <div class="estado-resultado ${clase}">
-                        <div class="icono">${icono}</div>
-                        <h2>DOCUMENTO ${mensajeEstado}</h2>
-                        <p class="mensaje">${data.mensaje}</p>
-                        ${data.documento ? `
-                            <div class="documento-info">
-                                <p><strong>Folio:</strong> ${data.documento.folio}</p>
-                                <p><strong>Título:</strong> ${data.documento.titulo}</p>
-                                <p><strong>Tipo:</strong> ${data.documento.tipo}</p>
-                                <p><strong>Área Emisora:</strong> ${data.documento.area}</p>
-                                <p><strong>Fecha de Emisión:</strong> ${new Date(data.documento.fecha_emision).toLocaleDateString()}</p>
-                            </div>
-                        ` : ''}
-                    </div>
-                `;
-
-            } catch (error) {
-                resultadoDiv.innerHTML = `
-                    <div class="estado-resultado error">
-                        <h2>⚠️ Error de Conexión</h2>
-                        <p>No se pudo conectar con el servidor de validación.</p>
-                    </div>
-                `;
-            }
-        }
-
-        validarDocumento();
-    </script>
+<div class="validacion-container">
+<h1>Validacion de Documento</h1>
+<div id="resultado"><p class="loading">Verificando documento...</p></div>
+<div class="footer">
+<p>Sistema de Validacion Documental con Codigo QR</p>
+<a href="login.html">Acceso Administrativo</a>
+</div>
+</div>
+<script>
+const API_URL = 'http://localhost:3000/api';
+async function validarDocumento() {
+    const params = new URLSearchParams(window.location.search);
+    const folio = params.get('folio');
+    const resultadoDiv = document.getElementById('resultado');
+    if (!folio) {
+        resultadoDiv.innerHTML = `<div class="estado-resultado no-encontrado"><h2>Documento No Encontrado</h2><p>No se proporciono un folio valido.</p></div>`;
+        return;
+    }
+    try {
+        const response = await fetch(`${API_URL}/validar/${folio}`);
+        const data = await response.json();
+        let icono, clase, mensajeEstado;
+        if (data.estado === 'no_registrado') { icono='❌'; clase='no-encontrado'; mensajeEstado='NO REGISTRADO'; }
+        else if (data.documento.estado === 'vigente') { icono='✅'; clase='vigente'; mensajeEstado='VALIDO'; }
+        else if (data.documento.estado === 'revocado') { icono='🚫'; clase='revocado'; mensajeEstado='REVOCADO'; }
+        else { icono='⚠️'; clase='cancelado'; mensajeEstado='CANCELADO'; }
+        resultadoDiv.innerHTML = `<div class="estado-resultado ${clase}"><div class="icono">${icono}</div><h2>DOCUMENTO ${mensajeEstado}</h2><p class="mensaje">${data.mensaje}</p>${data.documento ? `<div class="documento-info"><p><strong>Folio:</strong> ${data.documento.folio}</p><p><strong>Titulo:</strong> ${data.documento.titulo}</p><p><strong>Tipo:</strong> ${data.documento.tipo}</p><p><strong>Area Emisora:</strong> ${data.documento.area}</p><p><strong>Fecha de Emision:</strong> ${new Date(data.documento.fecha_emision).toLocaleDateString()}</p></div>` : ''}</div>`;
+    } catch (error) {
+        resultadoDiv.innerHTML = `<div class="estado-resultado error"><h2>Error de Conexion</h2><p>No se pudo conectar con el servidor.</p></div>`;
+    }
+}
+validarDocumento();
+</script>
 </body>
 </html>

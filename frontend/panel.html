@@ -1,189 +1,150 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Principal - Sistema QR</title>
-    <link rel="stylesheet" href="css/styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Principal - Sistema QR</title>
+<link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <nav>
-        <h1>📋 Sistema de Validación Documental con QR</h1>
-        <div class="user-info">
-            <span id="userName"></span>
-            <button onclick="logout()">Cerrar Sesión</button>
-        </div>
-    </nav>
+<nav>
+<h1>Sistema de Validacion Documental con QR</h1>
+<div class="user-info">
+<span id="userName"></span>
+<button onclick="logout()">Cerrar Sesion</button>
+</div>
+</nav>
+<div class="container">
+<section class="upload-section">
+<h2>Cargar Nuevo Documento</h2>
+<form id="uploadForm" enctype="multipart/form-data">
+<div class="form-group">
+<label>Titulo del documento:</label>
+<input type="text" id="titulo" required>
+</div>
+<div class="form-group">
+<label>Tipo de documento:</label>
+<input type="text" id="tipo" required placeholder="Ej: Constancia, Certificado, Oficio">
+</div>
+<div class="form-group">
+<label>Area emisora:</label>
+<input type="text" id="area" required placeholder="Ej: Direccion Academica">
+</div>
+<div class="form-group">
+<label>Posicion del QR:</label>
+<select id="posicion_qr">
+<option value="superior-derecha">Superior Derecha</option>
+<option value="superior-izquierda">Superior Izquierda</option>
+<option value="inferior-derecha">Inferior Derecha</option>
+<option value="inferior-izquierda">Inferior Izquierda</option>
+<option value="ultima-pagina">Ultima Pagina Inferior</option>
+</select>
+</div>
+<div class="form-group">
+<label>Archivo PDF:</label>
+<input type="file" id="pdf" accept=".pdf" required>
+</div>
+<button type="submit">Generar Documento con QR</button>
+</form>
+</section>
+<section class="repository-section">
+<h2>Repositorio de Documentos</h2>
+<table id="documentosTable">
+<thead>
+<tr><th>Folio</th><th>Titulo</th><th>Tipo</th><th>Area</th><th>Fecha</th><th>Estado</th><th>Acciones</th></tr>
+</thead>
+<tbody></tbody>
+</table>
+</section>
+</div>
+<script>
+const API_URL = 'http://localhost:3000/api';
+let token = localStorage.getItem('token');
+if (!token) window.location.href = 'login.html';
+document.getElementById('userName').textContent = JSON.parse(localStorage.getItem('user') || '{}').nombre || 'Usuario';
 
-    <div class="container">
-        <!-- Formulario de carga -->
-        <section class="upload-section">
-            <h2>📤 Cargar Nuevo Documento</h2>
-            <form id="uploadForm" enctype="multipart/form-data">
-                <div class="form-group">
-                    <label>Título del documento:</label>
-                    <input type="text" id="titulo" required>
-                </div>
-                <div class="form-group">
-                    <label>Tipo de documento:</label>
-                    <input type="text" id="tipo" required placeholder="Ej: Constancia, Certificado, Oficio">
-                </div>
-                <div class="form-group">
-                    <label>Área emisora:</label>
-                    <input type="text" id="area" required placeholder="Ej: Dirección Académica">
-                </div>
-                <div class="form-group">
-                    <label>Posición del QR:</label>
-                    <select id="posicion_qr">
-                        <option value="superior-derecha">Superior Derecha</option>
-                        <option value="superior-izquierda">Superior Izquierda</option>
-                        <option value="inferior-derecha">Inferior Derecha</option>
-                        <option value="inferior-izquierda">Inferior Izquierda</option>
-                        <option value="ultima-pagina">Última Página Inferior</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Archivo PDF:</label>
-                    <input type="file" id="pdf" accept=".pdf" required>
-                </div>
-                <button type="submit">Generar Documento con QR</button>
-            </form>
-        </section>
+async function cargarDocumentos() {
+    try {
+        const response = await fetch(`${API_URL}/documentos`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Error al cargar documentos');
+        const documentos = await response.json();
+        const tbody = document.querySelector('#documentosTable tbody');
+        tbody.innerHTML = '';
+        documentos.forEach(doc => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td><strong>${doc.folio}</strong></td><td>${doc.titulo}</td><td>${doc.tipo_documento}</td><td>${doc.area_emisora}</td><td>${new Date(doc.created_at).toLocaleDateString()}</td><td><span class="estado ${doc.estado}">${doc.estado.toUpperCase()}</span></td><td><button onclick="descargar('${doc.folio}')">Descargar</button><button onclick="copiarURL('${doc.folio}')">URL</button>${doc.estado === 'vigente' ? `<button onclick="revocar(${doc.id})" class="btn-danger">Revocar</button>` : '<span class="revocado-tag">Revocado</span>'}</td>`;
+            tbody.appendChild(tr);
+        });
+    } catch (error) { 
+        console.error('Error cargando documentos:', error);
+        document.querySelector('#documentosTable tbody').innerHTML = '<tr><td colspan="7">Error al cargar documentos. Verifica que el backend este corriendo.</td></tr>';
+    }
+}
 
-        <!-- Repositorio de documentos -->
-        <section class="repository-section">
-            <h2>📁 Repositorio de Documentos</h2>
-            <table id="documentosTable">
-                <thead>
-                    <tr>
-                        <th>Folio</th>
-                        <th>Título</th>
-                        <th>Tipo</th>
-                        <th>Área</th>
-                        <th>Fecha</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </section>
-    </div>
+document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append('titulo', document.getElementById('titulo').value);
+    formData.append('tipo_documento', document.getElementById('tipo').value);
+    formData.append('area_emisora', document.getElementById('area').value);
+    formData.append('posicion_qr', document.getElementById('posicion_qr').value);
+    formData.append('pdf', document.getElementById('pdf').files[0]);
 
-    <script>
-        const API_URL = 'http://localhost:3000/api';
-        let token = localStorage.getItem('token');
-
-        if (!token) {
-            window.location.href = 'login.html';
-        }
-
-        document.getElementById('userName').textContent = 
-            JSON.parse(localStorage.getItem('user') || '{}').nombre || 'Usuario';
-
-        // Cargar documentos
-        async function cargarDocumentos() {
-            try {
-                const response = await fetch(`${API_URL}/documentos`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const documentos = await response.json();
-
-                const tbody = document.querySelector('#documentosTable tbody');
-                tbody.innerHTML = '';
-
-                documentos.forEach(doc => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td><strong>${doc.folio}</strong></td>
-                        <td>${doc.titulo}</td>
-                        <td>${doc.tipo_documento}</td>
-                        <td>${doc.area_emisora}</td>
-                        <td>${new Date(doc.created_at).toLocaleDateString()}</td>
-                        <td><span class="estado ${doc.estado}">${doc.estado.toUpperCase()}</span></td>
-                        <td>
-                            <button onclick="descargar('${doc.folio}')">📥 Descargar</button>
-                            <button onclick="copiarURL('${doc.folio}')">🔗 URL</button>
-                            ${doc.estado === 'vigente' ? 
-                                `<button onclick="revocar(${doc.id})" class="btn-danger">🚫 Revocar</button>` : 
-                                '<span class="revocado-tag">Revocado</span>'}
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            } catch (error) {
-                console.error(error);
-            }
-        }
-
-        // Subir documento
-        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData();
-            formData.append('titulo', document.getElementById('titulo').value);
-            formData.append('tipo_documento', document.getElementById('tipo').value);
-            formData.append('area_emisora', document.getElementById('area').value);
-            formData.append('posicion_qr', document.getElementById('posicion_qr').value);
-            formData.append('pdf', document.getElementById('pdf').files[0]);
-
-            try {
-                const response = await fetch(`${API_URL}/documentos/upload`, {
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${token}` },
-                    body: formData
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    alert('Documento cargado exitosamente. Folio: ' + data.documento.folio);
-                    document.getElementById('uploadForm').reset();
-                    cargarDocumentos();
-                } else {
-                    alert(data.error || 'Error al cargar documento');
-                }
-            } catch (error) {
-                alert('Error de conexión');
-            }
+    try {
+        const response = await fetch(`${API_URL}/documentos/upload`, {
+            method: 'POST', 
+            headers: { 'Authorization': `Bearer ${token}` }, 
+            body: formData
         });
 
-        // Revocar documento
-        async function revocar(id) {
-            if (!confirm('¿Está seguro de revocar este documento?')) return;
-
-            try {
-                const response = await fetch(`${API_URL}/documentos/revocar/${id}`, {
-                    method: 'PUT',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (response.ok) {
-                    alert('Documento revocado exitosamente');
-                    cargarDocumentos();
-                }
-            } catch (error) {
-                alert('Error al revocar');
-            }
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: 'Error desconocido del servidor' }));
+            throw new Error(errorData.error || `Error HTTP: ${response.status}`);
         }
 
-        // Descargar PDF
-        function descargar(folio) {
-            window.open(`${API_URL}/documentos/descargar/${folio}?token=${token}`);
-        }
-
-        // Copiar URL de validación
-        function copiarURL(folio) {
-            const url = `${window.location.origin}/validar.html?folio=${folio}`;
-            navigator.clipboard.writeText(url);
-            alert('URL copiada: ' + url);
-        }
-
-        function logout() {
-            localStorage.clear();
-            window.location.href = 'login.html';
-        }
-
+        const data = await response.json();
+        alert('Documento cargado exitosamente. Folio: ' + data.documento.folio);
+        document.getElementById('uploadForm').reset();
         cargarDocumentos();
-    </script>
+    } catch (error) { 
+        console.error('Error completo:', error);
+        alert('Error al cargar documento: ' + error.message);
+    }
+});
+
+async function revocar(id) {
+    if (!confirm('Seguro de revocar este documento?')) return;
+    try {
+        const response = await fetch(`${API_URL}/documentos/revocar/${id}`, {
+            method: 'PUT', 
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Error al revocar');
+        alert('Documento revocado');
+        cargarDocumentos();
+    } catch (error) { 
+        alert('Error al revocar: ' + error.message); 
+    }
+}
+
+function descargar(folio) {
+    window.open(`${API_URL}/documentos/descargar/${folio}?token=${token}`);
+}
+
+function copiarURL(folio) {
+    const url = `${window.location.origin}/validar.html?folio=${folio}`;
+    navigator.clipboard.writeText(url);
+    alert('URL copiada: ' + url);
+}
+
+function logout() { 
+    localStorage.clear(); 
+    window.location.href = 'login.html'; 
+}
+
+cargarDocumentos();
+</script>
 </body>
 </html>
